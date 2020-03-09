@@ -15,18 +15,17 @@ import pickle
 
 
 class Autoencoder():
-    def __init__(self
-        , input_dim
-        , encoder_conv_filters
-        , encoder_conv_kernel_size
-        , encoder_conv_strides
-        , decoder_conv_t_filters
-        , decoder_conv_t_kernel_size
-        , decoder_conv_t_strides
-        , z_dim
-        , use_batch_norm = False
-        , use_dropout = False
-        ):
+    def __init__(self,
+                 input_dim,
+                 encoder_conv_filters,
+                 encoder_conv_kernel_size,
+                 encoder_conv_strides,
+                 decoder_conv_t_filters,
+                 decoder_conv_t_kernel_size,
+                 decoder_conv_t_strides,
+                 z_dim,
+                 use_batch_norm = False,
+                 use_dropout = False):
 
         self.name = 'autoencoder'
 
@@ -55,13 +54,11 @@ class Autoencoder():
         x = encoder_input
 
         for i in range(self.n_layers_encoder):
-            conv_layer = Conv2D(
-                filters = self.encoder_conv_filters[i]
-                , kernel_size = self.encoder_conv_kernel_size[i]
-                , strides = self.encoder_conv_strides[i]
-                , padding = 'same'
-                , name = 'encoder_conv_' + str(i)
-                )
+            conv_layer = Conv2D(filters = self.encoder_conv_filters[i],
+                                kernel_size = self.encoder_conv_kernel_size[i],
+                                strides = self.encoder_conv_strides[i],
+                                padding = 'same',
+                                name = 'encoder_conv_' + str(i))
 
             x = conv_layer(x)
 
@@ -89,12 +86,11 @@ class Autoencoder():
 
         for i in range(self.n_layers_decoder):
             conv_t_layer = Conv2DTranspose(
-                filters = self.decoder_conv_t_filters[i]
-                , kernel_size = self.decoder_conv_t_kernel_size[i]
-                , strides = self.decoder_conv_t_strides[i]
-                , padding = 'same'
-                , name = 'decoder_conv_t_' + str(i)
-                )
+                filters = self.decoder_conv_t_filters[i],
+                kernel_size = self.decoder_conv_t_kernel_size[i],
+                strides = self.decoder_conv_t_strides[i],
+                padding = 'same',
+                name = 'decoder_conv_t_' + str(i))
 
             x = conv_t_layer(x)
 
@@ -140,16 +136,16 @@ class Autoencoder():
 
         with open(os.path.join(folder, 'params.pkl'), 'wb') as f:
             pickle.dump([
-                self.input_dim
-                , self.encoder_conv_filters
-                , self.encoder_conv_kernel_size
-                , self.encoder_conv_strides
-                , self.decoder_conv_t_filters
-                , self.decoder_conv_t_kernel_size
-                , self.decoder_conv_t_strides
-                , self.z_dim
-                , self.use_batch_norm
-                , self.use_dropout
+                self.input_dim,
+                self.encoder_conv_filters,
+                self.encoder_conv_kernel_size,
+                self.encoder_conv_strides,
+                self.decoder_conv_t_filters,
+                self.decoder_conv_t_kernel_size,
+                self.decoder_conv_t_strides,
+                self.z_dim,
+                self.use_batch_norm,
+                self.use_dropout
                 ], f)
 
         self.plot_model(folder)
@@ -161,24 +157,25 @@ class Autoencoder():
         self.model.load_weights(filepath)
 
     
-    def train(self, x_train, batch_size, epochs, run_folder, print_every_n_batches = 100, initial_epoch = 0, lr_decay = 1):
+    def train(self, x_train, batch_size, epochs,
+              run_folder, print_every_n_batches = 100, initial_epoch = 0, lr_decay = 1):
 
         custom_callback = CustomCallback(run_folder, print_every_n_batches, initial_epoch, self)
         lr_sched = step_decay_schedule(initial_lr=self.learning_rate, decay_factor=lr_decay, step_size=1)
 
-        checkpoint2 = ModelCheckpoint(os.path.join(run_folder, 'weights/weights.h5'), save_weights_only = True, verbose=1)
+        checkpoint2 = ModelCheckpoint(
+            os.path.join(run_folder, 'weights/weights.h5'), save_weights_only = True, verbose=1)
 
         callbacks_list = [checkpoint2, custom_callback, lr_sched]
 
         self.model.fit(     
-            x_train
-            , x_train
-            , batch_size = batch_size
-            , shuffle = True
-            , epochs = epochs
-            , initial_epoch = initial_epoch
-            , callbacks = callbacks_list
-        )
+            x_train,
+            x_train,
+            batch_size = batch_size,
+            shuffle = True,
+            epochs = epochs,
+            initial_epoch = initial_epoch,
+            callbacks = callbacks_list)
 
     def plot_model(self, run_folder):
         plot_model(self.model, to_file=os.path.join(run_folder ,'viz/model.png'), show_shapes = True, show_layer_names = True)
